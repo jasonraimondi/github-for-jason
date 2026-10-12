@@ -1,5 +1,4 @@
-const DEFAULT_QUERY =
-  "is:pr is:open (assignee:jasonraimondi OR user-review-requested:jasonraimondi)";
+const DEFAULT_QUERY = "is:pr is:open (assignee:@me OR user-review-requested:@me)";
 const GITHUB_DEFAULT_QUERY = "is:pr is:open";
 const ORG_PULLS_PATH = /^\/jasonraimondi\/[^/]+\/pulls\/?$/;
 const SEARCH_INPUT_ID = "repo-pulls-dashboard-filter-input";
@@ -26,32 +25,28 @@ function createToggleButton() {
   const button = document.createElement("button");
   button.id = TOGGLE_BUTTON_ID;
   button.type = "button";
-  Object.assign(button.style, {
-    position: "absolute",
-    right: "calc(100% + 16px)",
-    top: "0",
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    border: "1px solid var(--borderColor-default)",
-    background: "var(--bgColor-muted)",
-    color: "var(--fgColor-muted)",
-    cursor: "pointer",
-  });
   button.addEventListener("click", () => {
     const query = isDefaultQueryActive() ? GITHUB_DEFAULT_QUERY : DEFAULT_QUERY;
     location.assign(urlWithQuery(query));
   });
+  button.append(createAvatar());
   return button;
+}
+
+function createAvatar() {
+  const login = document.querySelector('meta[name="user-login"]')?.getAttribute("content");
+  if (!login) return "↺";
+  const avatar = document.createElement("img");
+  avatar.src = `https://avatars.githubusercontent.com/${login}?s=64`;
+  avatar.alt = "";
+  return avatar;
 }
 
 /** @param {HTMLElement} button */
 function renderToggleButton(button) {
   const active = isDefaultQueryActive();
-  const icon = active ? "✕" : "↺";
   const label = active ? "Show all pull requests" : "Show my pull requests";
-  // Rewriting identical text still emits a childList mutation, which would re-trigger the observer forever.
-  if (button.textContent !== icon) button.textContent = icon;
+  button.dataset.state = active ? "active" : "inactive";
   button.title = label;
   button.setAttribute("aria-label", label);
 }
@@ -70,7 +65,6 @@ function syncToggleButton() {
   if (!(search instanceof HTMLElement)) return;
   const button = createToggleButton();
   renderToggleButton(button);
-  search.style.position = "relative";
   search.append(button);
 }
 

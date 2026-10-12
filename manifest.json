@@ -10,6 +10,7 @@
     {
       "matches": ["https://github.com/*"],
       "js": ["pulls.js"],
+      "css": ["pulls.css"],
       "run_at": "document_start"
     }
   ]

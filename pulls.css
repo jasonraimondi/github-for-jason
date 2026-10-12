@@ -1,0 +1,109 @@
+[role="search"]:has(> #github-for-jason-toggle-query) {
+  position: relative;
+}
+
+#github-for-jason-toggle-query {
+  --doom-size: 44px;
+  --doom-avatar-size: 30px;
+  --doom-gap: 16px;
+  --doom-fire: #ff4500;
+  --doom-blood: #7a0000;
+  --doom-ember: #ffd000;
+  --doom-metal-light: #a8a8a8;
+  --doom-metal-dark: #2a2a2a;
+  --doom-void: #000;
+  --doom-ban: #ff1a1a;
+  --doom-ban-stroke: 3px;
+  --doom-glow: color-mix(in srgb, var(--doom-fire) 75%, transparent);
+
+  position: absolute;
+  inset-inline-end: calc(100% + var(--doom-gap));
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  inline-size: var(--doom-size);
+  block-size: var(--doom-size);
+  padding: 0;
+  border: 3px solid;
+  border-color: var(--doom-metal-light) var(--doom-metal-dark) var(--doom-metal-dark)
+    var(--doom-metal-light);
+  border-radius: 2px;
+  background: radial-gradient(circle at 35% 30%, var(--doom-fire), var(--doom-blood) 75%);
+  box-shadow: 0 0 0 2px var(--doom-void);
+  color: var(--doom-ember);
+  font: 900 22px/1 Impact, "Arial Black", sans-serif;
+  text-shadow:
+    2px 2px 0 var(--doom-void),
+    0 0 6px var(--doom-fire);
+  cursor: pointer;
+}
+
+#github-for-jason-toggle-query > img {
+  box-sizing: border-box;
+  inline-size: var(--doom-avatar-size);
+  block-size: var(--doom-avatar-size);
+  border: 2px solid var(--doom-ember);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--doom-void);
+}
+
+#github-for-jason-toggle-query[data-state="inactive"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  box-sizing: border-box;
+  inline-size: var(--doom-avatar-size);
+  block-size: var(--doom-avatar-size);
+  border: var(--doom-ban-stroke) solid var(--doom-ban);
+  border-radius: 50%;
+  background: linear-gradient(
+    45deg,
+    transparent calc(50% - var(--doom-ban-stroke) / 2),
+    var(--doom-ban) 0 calc(50% + var(--doom-ban-stroke) / 2),
+    transparent 0
+  );
+  filter: drop-shadow(0 0 1px var(--doom-void));
+  pointer-events: none;
+}
+
+#github-for-jason-toggle-query::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  box-shadow: 0 0 18px 4px var(--doom-glow);
+  pointer-events: none;
+  animation: github-for-jason-doom-pulse 1.4s ease-in-out infinite alternate;
+}
+
+#github-for-jason-toggle-query:hover {
+  filter: brightness(1.25) saturate(1.2);
+}
+
+#github-for-jason-toggle-query:active {
+  translate: 0 calc(-50% + 2px);
+  border-color: var(--doom-metal-dark) var(--doom-metal-light) var(--doom-metal-light)
+    var(--doom-metal-dark);
+}
+
+#github-for-jason-toggle-query:focus-visible {
+  outline: 2px solid var(--doom-ember);
+  outline-offset: 4px;
+}
+
+@keyframes github-for-jason-doom-pulse {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #github-for-jason-toggle-query::before {
+    animation: none;
+  }
+}
