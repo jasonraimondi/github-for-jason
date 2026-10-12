@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>GitHub for Jason</title>
+    <style>
+      body {
+        font: 14px/1.5 system-ui, sans-serif;
+        min-inline-size: 360px;
+      }
+
+      textarea {
+        display: block;
+        box-sizing: border-box;
+        inline-size: 100%;
+        margin-block: 4px 8px;
+        font-family: ui-monospace, monospace;
+      }
+
+      #invalid-entries {
+        color: #cf222e;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="enabled-repos-form">
+      <label for="enabled-repos">Enabled repos</label>
+      <p id="enabled-repos-hint">
+        One per line: an owner (<code>jasonraimondi</code>) or a repo
+        (<code>jasonraimondi/github-for-jason</code>).
+      </p>
+      <textarea
+        id="enabled-repos"
+        rows="10"
+        spellcheck="false"
+        aria-describedby="enabled-repos-hint"
+      ></textarea>
+      <button type="submit">Save</button>
+      <output id="status" for="enabled-repos"></output>
+      <ul id="invalid-entries"></ul>
+    </form>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

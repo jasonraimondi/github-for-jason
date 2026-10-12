@@ -1,8 +1,20 @@
-const DEFAULT_QUERY = "is:pr is:open (assignee:@me OR user-review-requested:@me)";
+const MY_PRS_QUERY = "is:pr is:open (assignee:@me OR user-review-requested:@me)";
 const GITHUB_DEFAULT_QUERY = "is:pr is:open";
-const ORG_PULLS_PATH = /^\/jasonraimondi\/[^/]+\/pulls\/?$/;
+const PULLS_PATH = /^\/([^/]+)\/([^/]+)\/pulls\/?$/;
+const ENABLED_REPOS_KEY = "enabledRepos";
 const SEARCH_INPUT_ID = "repo-pulls-dashboard-filter-input";
 const TOGGLE_BUTTON_ID = "github-for-jason-toggle-query";
+
+/** @type {string[]} */
+let enabledRepos = [];
+
+/** @param {string} pathname */
+function isEnabledPullsPage(pathname) {
+  const match = PULLS_PATH.exec(pathname.toLowerCase());
+  if (!match) return false;
+  const [, owner, repo] = match;
+  return enabledRepos.some((entry) => entry === owner || entry === `${owner}/${repo}`);
+}
 
 /** @param {string} query */
 function urlWithQuery(query) {
@@ -11,14 +23,14 @@ function urlWithQuery(query) {
   return url;
 }
 
-function isDefaultQueryActive() {
-  return new URLSearchParams(location.search).get("q") === DEFAULT_QUERY;
+function isMyPrsQueryActive() {
+  return new URLSearchParams(location.search).get("q") === MY_PRS_QUERY;
 }
 
-function applyDefaultQuery() {
+function applyMyPrsQuery() {
   const params = new URLSearchParams(location.search);
-  if (!ORG_PULLS_PATH.test(location.pathname) || params.has("q")) return;
-  location.replace(urlWithQuery(DEFAULT_QUERY));
+  if (!isEnabledPullsPage(location.pathname) || params.has("q")) return;
+  location.replace(urlWithQuery(MY_PRS_QUERY));
 }
 
 function createToggleButton() {
@@ -26,7 +38,7 @@ function createToggleButton() {
   button.id = TOGGLE_BUTTON_ID;
   button.type = "button";
   button.addEventListener("click", () => {
-    const query = isDefaultQueryActive() ? GITHUB_DEFAULT_QUERY : DEFAULT_QUERY;
+    const query = isMyPrsQueryActive() ? GITHUB_DEFAULT_QUERY : MY_PRS_QUERY;
     location.assign(urlWithQuery(query));
   });
   button.append(createAvatar());
@@ -44,7 +56,7 @@ function createAvatar() {
 
 /** @param {HTMLElement} button */
 function renderToggleButton(button) {
-  const active = isDefaultQueryActive();
+  const active = isMyPrsQueryActive();
   const label = active ? "Show all pull requests" : "Show my pull requests";
   button.dataset.state = active ? "active" : "inactive";
   button.title = label;
@@ -53,7 +65,7 @@ function renderToggleButton(button) {
 
 function syncToggleButton() {
   const existing = document.getElementById(TOGGLE_BUTTON_ID);
-  if (!ORG_PULLS_PATH.test(location.pathname)) {
+  if (!isEnabledPullsPage(location.pathname)) {
     existing?.remove();
     return;
   }
@@ -68,9 +80,19 @@ function syncToggleButton() {
   search.append(button);
 }
 
-applyDefaultQuery();
+chrome.storage.sync.get(ENABLED_REPOS_KEY).then((items) => {
+  enabledRepos = /** @type {string[] | undefined} */ (items[ENABLED_REPOS_KEY]) ?? [];
+  applyMyPrsQuery();
+  syncToggleButton();
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  const change = changes[ENABLED_REPOS_KEY];
+  if (area !== "sync" || !change) return;
+  enabledRepos = /** @type {string[] | undefined} */ (change.newValue) ?? [];
+  syncToggleButton();
+});
 // GitHub switches pages client-side, so a content script only runs on full loads.
-navigation.addEventListener("currententrychange", applyDefaultQuery);
+navigation.addEventListener("currententrychange", applyMyPrsQuery);
 new MutationObserver(syncToggleButton).observe(document.documentElement, {
   childList: true,
   subtree: true,
