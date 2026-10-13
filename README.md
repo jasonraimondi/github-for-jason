@@ -2,7 +2,7 @@
 
 A personal Chrome extension that tweaks github.com.
 
-- **My PRs filter**: on enabled repos, the pull request list opens filtered to open PRs assigned to you or awaiting your review. An avatar button beside the search box toggles back to GitHub's default list.
+- **My PRs filter**: on enabled repos, the pull request list opens filtered to open PRs you authored, are assigned to, or are asked to review. An avatar button beside the search box toggles back to GitHub's default list.
 
 ![The avatar toggle beside a pull request search filtered to my assigned and review-requested PRs](docs/my-prs-filter.png)
 

@@ -5,7 +5,7 @@ A personal browser extension that reshapes github.com pages around how Jason wor
 ## Language
 
 **My PRs filter**:
-The pull request list narrowed to open PRs assigned to me or awaiting my review, together with the avatar toggle that switches between it and GitHub's default list.
+The pull request list narrowed to open PRs I authored, am assigned to, or am asked to review, together with the avatar toggle that switches between it and GitHub's default list.
 _Avoid_: my filter, PR filter, default query
 
 **Enabled repos**:

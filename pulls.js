@@ -1,4 +1,4 @@
-const MY_PRS_QUERY = "is:pr is:open (assignee:@me OR user-review-requested:@me)";
+const MY_PRS_QUERY = "is:pr is:open (assignee:@me OR user-review-requested:@me OR author:@me)";
 const GITHUB_DEFAULT_QUERY = "is:pr is:open";
 const PULLS_PATH = /^\/([^/]+)\/([^/]+)\/pulls\/?$/;
 const ENABLED_REPOS_KEY = "enabledRepos";
