@@ -20,7 +20,7 @@ In any repo's pull request list, each stacked PR's stack badge (icon and `1/2` c
 
 1. Open `chrome://extensions` and turn on Developer mode.
 2. Click **Load unpacked** and choose this folder.
-3. Right-click the extension → **Options**, and add the owners (`jasonraimondi`) or repos (`jasonraimondi/github-for-jason`) where the filter applies, one per line.
+3. Right-click the extension → **Options**, and add the owners (`jasonraimondi`) or repos (`jasonraimondi/github-for-jason`) where the filter applies, one per line. Leave it empty to apply the filter everywhere.
 
 ## Develop
 

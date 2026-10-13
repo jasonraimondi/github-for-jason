@@ -9,7 +9,7 @@ The pull request list narrowed to open PRs I authored, am assigned to, or am ask
 _Avoid_: my filter, PR filter, default query
 
 **Enabled repos**:
-The user-configured list of entries naming where the My PRs filter applies; empty means it applies nowhere.
+The user-configured list of entries naming where the My PRs filter applies; empty means it applies everywhere.
 _Avoid_: org list, targets, scope
 
 **Entry**:

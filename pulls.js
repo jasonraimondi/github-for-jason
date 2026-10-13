@@ -29,15 +29,16 @@ const STACK_COLORS = [
 
 /** @typedef {{ stack: { number: number, repositoryOwnerLogin: string, repositoryName: string, pulls: { number: number }[] } }} StackPageData */
 
-/** @type {string[]} */
-let enabledRepos = [];
+/** @type {string[] | undefined} */
+let enabledRepos;
 /** @type {Map<string, Promise<string | null>>} */
 const stackKeysByPullPath = new Map();
 
 /** @param {string} pathname */
 function isEnabledPullsPage(pathname) {
   const match = PULLS_PATH.exec(pathname.toLowerCase());
-  if (!match) return false;
+  if (!match || !enabledRepos) return false;
+  if (enabledRepos.length === 0) return true;
   const [, owner, repo] = match;
   return enabledRepos.some((entry) => entry === owner || entry === `${owner}/${repo}`);
 }
