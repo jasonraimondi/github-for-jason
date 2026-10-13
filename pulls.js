@@ -4,9 +4,35 @@ const PULLS_PATH = /^\/([^/]+)\/([^/]+)\/pulls\/?$/;
 const ENABLED_REPOS_KEY = "enabledRepos";
 const SEARCH_INPUT_ID = "repo-pulls-dashboard-filter-input";
 const TOGGLE_BUTTON_ID = "github-for-jason-toggle-query";
+const STACK_BADGE_SELECTOR = 'button[aria-label^="Pull request stack"]';
+const PULL_PATH = /^\/[^/]+\/[^/]+\/pull\/\d+$/;
+/** @type {[string, ...string[]]} */
+const STACK_COLORS = [
+  "oklch(63.7% 0.237 25.331)",  // red
+  "oklch(70.5% 0.213 47.604)",  // orange
+  "oklch(76.9% 0.188 70.08)",   // amber
+  "oklch(79.5% 0.184 86.047)",  // yellow
+  "oklch(76.8% 0.233 130.85)",  // lime
+  "oklch(72.3% 0.219 149.579)", // green
+  "oklch(69.6% 0.17 162.48)",   // emerald
+  "oklch(70.4% 0.14 182.503)",  // teal
+  "oklch(71.5% 0.143 215.221)", // cyan
+  "oklch(68.5% 0.169 237.323)", // sky
+  "oklch(62.3% 0.214 259.815)", // blue
+  "oklch(58.5% 0.233 277.117)", // indigo
+  "oklch(60.6% 0.25 292.717)",  // violet
+  "oklch(62.7% 0.265 303.9)",   // purple
+  "oklch(66.7% 0.295 322.15)",  // fuchsia
+  "oklch(65.6% 0.241 354.308)", // pink
+  "oklch(64.5% 0.246 16.439)",  // rose
+];
+
+/** @typedef {{ stack: { number: number, repositoryOwnerLogin: string, repositoryName: string, pulls: { number: number }[] } }} StackPageData */
 
 /** @type {string[]} */
 let enabledRepos = [];
+/** @type {Map<string, Promise<string | null>>} */
+const stackKeysByPullPath = new Map();
 
 /** @param {string} pathname */
 function isEnabledPullsPage(pathname) {
@@ -80,6 +106,70 @@ function syncToggleButton() {
   search.append(button);
 }
 
+/** @param {string} pullPath */
+function fetchStackKey(pullPath) {
+  const cached = stackKeysByPullPath.get(pullPath);
+  if (cached) return cached;
+  const stackKey = fetch(`${pullPath}/page_data/stacks`, {
+    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+  })
+    .then((response) => (response.ok ? response.json() : null))
+    .then((data) => {
+      if (!data) return null;
+      const { stack } = /** @type {StackPageData} */ (data);
+      const repoPath = `/${stack.repositoryOwnerLogin}/${stack.repositoryName}`;
+      const key = `${repoPath}#${stack.number}`;
+      for (const pull of stack.pulls) {
+        stackKeysByPullPath.set(`${repoPath}/pull/${pull.number}`, Promise.resolve(key));
+      }
+      return key;
+    })
+    .catch(() => null);
+  stackKeysByPullPath.set(pullPath, stackKey);
+  return stackKey;
+}
+
+/** @param {string} text */
+function hashString(text) {
+  let hash = 0;
+  for (const char of text) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return hash;
+}
+
+/** @param {string} stackKey */
+function pickStackColor(stackKey) {
+  const painted = [...document.querySelectorAll("[data-github-for-jason-stack-color]")].filter(
+    (badge) => badge instanceof HTMLElement,
+  );
+  const sameStack = painted.find((badge) => badge.dataset.githubForJasonStack === stackKey);
+  if (sameStack?.dataset.githubForJasonStackColor) return sameStack.dataset.githubForJasonStackColor;
+  const taken = new Set(painted.map((badge) => badge.dataset.githubForJasonStackColor));
+  const start = hashString(stackKey) % STACK_COLORS.length;
+  const rotated = [...STACK_COLORS.slice(start), ...STACK_COLORS.slice(0, start)];
+  return rotated.find((color) => !taken.has(color)) ?? STACK_COLORS[0];
+}
+
+/** @param {HTMLElement} badge */
+async function paintStackBadge(badge) {
+  badge.dataset.githubForJasonStack = "";
+  const link = [...(badge.closest("li")?.querySelectorAll("a") ?? [])].find((a) =>
+    PULL_PATH.test(a.pathname),
+  );
+  if (!link) return;
+  const stackKey = await fetchStackKey(link.pathname);
+  if (!stackKey) return;
+  const color = pickStackColor(stackKey);
+  badge.dataset.githubForJasonStack = stackKey;
+  badge.dataset.githubForJasonStackColor = color;
+  badge.style.setProperty("--github-for-jason-stack-color", color);
+}
+
+function paintStackBadges() {
+  for (const badge of document.querySelectorAll(`${STACK_BADGE_SELECTOR}:not([data-github-for-jason-stack])`)) {
+    if (badge instanceof HTMLElement) paintStackBadge(badge);
+  }
+}
+
 chrome.storage.sync.get(ENABLED_REPOS_KEY).then((items) => {
   enabledRepos = /** @type {string[] | undefined} */ (items[ENABLED_REPOS_KEY]) ?? [];
   applyMyPrsQuery();
@@ -93,7 +183,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 // GitHub switches pages client-side, so a content script only runs on full loads.
 navigation.addEventListener("currententrychange", applyMyPrsQuery);
-new MutationObserver(syncToggleButton).observe(document.documentElement, {
+new MutationObserver(() => {
+  syncToggleButton();
+  paintStackBadges();
+}).observe(document.documentElement, {
   childList: true,
   subtree: true,
 });

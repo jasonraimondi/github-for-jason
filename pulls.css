@@ -107,3 +107,10 @@
     animation: none;
   }
 }
+
+button[data-github-for-jason-stack-color] {
+  padding-inline: 6px;
+  border-radius: 999px;
+  background-color: var(--github-for-jason-stack-color);
+  color: var(--fgColor-onEmphasis);
+}

@@ -23,3 +23,11 @@ _Avoid_: org (an owner may be a user)
 **Repo**:
 A single repository written as `owner/name`; as an entry it covers only that repository.
 _Avoid_: project
+
+**Stack**:
+A chain of pull requests where each one builds on the one below it, shown by GitHub as a stack badge (`1/2`) on each PR in the list.
+_Avoid_: chain, series
+
+**Stack color**:
+The color filling a stack badge's pill; every PR in a stack shares it, and stacks shown together get different ones until the palette runs out.
+_Avoid_: badge color
